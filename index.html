@@ -1,0 +1,80 @@
+<!doctype html>
+<html class="no-js" lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Mother Box</title>
+		<meta name="author" content="Breno Martinusso" />
+<style>
+	form div {
+		display: block;
+		margin: auto;
+		max-width: 900px;
+	}
+	h2 {
+		text-align: center;
+	}
+	button, input, textarea {
+		margin: 0.3em;
+	}
+</style>
+	</head>
+	<body>
+		<nav>
+			<ul>
+				<li>base64</li>
+			</ul>
+		</nav>
+		<main>
+			<section class="" id="base64">
+				<h2>Base 64</h2>
+				<form>
+					<div>
+						<textarea id="base64-encoded" placeholder="Type (or paste) here..." spellcheck="false" rows="14" cols="120"></textarea>
+					</div>
+					<div>
+						<button type="button" onclick="decodeBase64()" id="base64-decode" value="Decode">Decode</button>
+						<button type="button" onclick="encodeBase64()" id="base64-encode" value="Encode">Encode</button>
+					</div>
+					<div>
+						<textarea id="base64-decoded" placeholder="Type (or paste) here..." spellcheck="false" rows="14" cols="120"></textarea>
+					</div>
+				</form>
+			</section>
+			<section class="" id="docs">
+				<h2>Brazilian Documents</h2>
+				<form>
+					<div>
+						<button type="button" onclick="cpf()" id="doc-cpf" value="Generate CPF">Generate CPF</button>
+						<button type="button" onclick="cnpj()" id="doc-cnpj" value="Generate CNPJ">Generate CNPJ</button>
+					</div>
+					<div>
+						<input id="doc" />
+					</div>
+				</form>
+			</section>
+		</main>
+
+<script type="text/javascript">
+	(function() {
+	})();
+
+	// Base64
+	function decodeBase64() {
+		var encodedData = document.getElementById("base64-encoded").value; 
+		document.getElementById("base64-decoded").value = window.atob(encodedData); 
+	}
+	function encodeBase64() {
+		var encodedData = document.getElementById("base64-decoded").value; 
+		document.getElementById("base64-encoded").value = window.btoa(encodedData); 
+	}
+
+	// Docs
+	function cpf() {
+		document.getElementById("doc").value = "Not implemented!"; 
+	}
+	function cnpj() {
+		document.getElementById("doc").value = "Not implemented!"; 
+	}
+</script>
+	</body>
+</html>
