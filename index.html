@@ -17,20 +17,41 @@
 	button, input, textarea {
 		margin: 0.3em;
 	}
+	nav ul {
+		list-style: none;
+	}
+	nav ul li {
+		display: inline;
+	}
+	nav ul li a {
+		color: blue;
+		display: inline-block;
+		padding: 0.5em;
+	}
+	nav ul li a:hover {
+		color: red;
+	}
+	.state-hidden:not(.tabs-active) {
+	    display: none;
+	}
 </style>
 	</head>
 	<body>
 		<nav>
 			<ul>
-				<li>base64</li>
+				<li><i class="fas fa-box"></i></li>
+				<li><a href="#" onclick="show('base64')">base64</a></li>
+				<li><a href="#" onclick="show('br-docs')">br docs</a></li>
+				<li><a href="#" onclick="show('uuid')">uuid</a></li>
 			</ul>
 		</nav>
 		<main>
-			<section class="" id="base64">
+			<section class="state-hidden" id="base64">
 				<h2>Base 64</h2>
 				<form>
 					<div>
 						<textarea id="base64-encoded" placeholder="Type (or paste) here..." spellcheck="false" rows="14" cols="120"></textarea>
+						<button type="button" onclick="copy('base64-encoded')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
 					</div>
 					<div>
 						<button type="button" onclick="decodeBase64()" id="base64-decode" value="Decode"><i class="fas fa-arrow-down"></i> Decode</button>
@@ -38,10 +59,12 @@
 					</div>
 					<div>
 						<textarea id="base64-decoded" placeholder="Type (or paste) here..." spellcheck="false" rows="14" cols="120"></textarea>
+						<button type="button" onclick="copy('base64-decoded')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
 					</div>
 				</form>
 			</section>
-			<section class="" id="docs">
+
+			<section class="state-hidden" id="br-docs">
 				<h2>Brazilian Documents</h2>
 				<form>
 					<div>
@@ -53,11 +76,39 @@
 					</div>
 				</form>
 			</section>
+
+			<section class="state-hidden" id="uuid">
+				<h2>UUID</h2>
+				<form>
+					<div>
+						<button type="button" onclick="uuid()" id="generate-uuid" value="Generate">Generate</button>
+					</div>
+					<div>
+						<input id="uuid-value" size="36" />
+						<button type="button" onclick="copy('uuid-value')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
+					</div>
+				</form>
+			</section>
 		</main>
 
 <script type="text/javascript">
-	(function() {
-	})();
+	function copy(id) {
+		var copyText = document.getElementById(id);
+		copyText.select();
+		document.execCommand("copy");
+	} 
+
+	function hideAll() {
+		var els = document.querySelectorAll('.tabs-active')
+		for (var i = 0; i < els.length; i++) {
+			els[i].classList.remove('tabs-active')
+		}
+	}
+	function show(id) {
+		hideAll();
+		var element = document.getElementById(id);
+		element.classList.add("tabs-active");
+	}
 
 	// Base64
 	function decodeBase64() {
@@ -75,6 +126,14 @@
 	}
 	function cnpj() {
 		document.getElementById("doc").value = "Not implemented!"; 
+	}
+
+	function uuid() {
+		id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+			return v.toString(16);
+		});
+		document.getElementById("uuid-value").value = id;
 	}
 </script>
 	</body>
