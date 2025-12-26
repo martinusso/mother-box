@@ -2,10 +2,20 @@
 <html class="no-js" lang="en">
 	<head>
 		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="Mother Box - Utility tools for Base64 encoding/decoding, JSON formatting, UUID generation, and Brazilian document generation">
 		<title>Mother Box 📦</title>
 		<meta name="author" content="Breno Martinusso" />
-		<script src="https://kit.fontawesome.com/0dd7737c11.js"></script>
+		<script src="https://kit.fontawesome.com/0dd7737c11.js" crossorigin="anonymous"></script>
 <style>
+	* {
+		box-sizing: border-box;
+	}
+	body {
+		margin: 0;
+		padding: 1em;
+		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	}
 	form div {
 		display: block;
 		margin: auto;
@@ -16,9 +26,36 @@
 	}
 	button, input, textarea {
 		margin: 0.3em;
+		font-size: 1em;
+	}
+	textarea {
+		width: 100%;
+		max-width: 100%;
+		resize: vertical;
+	}
+	button {
+		cursor: pointer;
+		padding: 0.5em 1em;
+	}
+	.input-group {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5em;
+	}
+	.input-group textarea {
+		flex: 1;
+	}
+	.input-group button {
+		flex-shrink: 0;
 	}
 	nav ul {
 		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5em;
 	}
 	nav ul li {
 		display: inline;
@@ -27,87 +64,138 @@
 		color: blue;
 		display: inline-block;
 		padding: 0.5em;
+		text-decoration: none;
+		cursor: pointer;
+		border-radius: 4px;
 	}
-	nav ul li a:hover {
+	nav ul li a:hover,
+	nav ul li a:focus {
 		color: red;
+		background-color: #f0f0f0;
+		outline: 2px solid blue;
+		outline-offset: 2px;
+	}
+	nav ul li a[aria-selected="true"] {
+		font-weight: bold;
+		text-decoration: underline;
 	}
 	.state-hidden:not(.tabs-active) {
 	    display: none;
 	}
+	.error-message {
+		color: red;
+		background-color: #ffe6e6;
+		padding: 0.5em;
+		border-radius: 4px;
+		margin: 0.3em;
+		display: none;
+	}
+	.error-message.show {
+		display: block;
+	}
+	@media (max-width: 768px) {
+		.input-group {
+			flex-direction: column;
+		}
+		.input-group button {
+			width: 100%;
+		}
+	}
 </style>
 	</head>
 	<body>
-		<nav>
+		<nav role="tablist" aria-label="Tool selection">
 			<ul>
-				<li><i class="fas fa-box"></i></li>
-				<li><a href="#" onclick="show('base64')">base64</a></li>
-				<li><a href="#" onclick="show('br-docs')">br docs</a></li>
-				<li><a href="#" onclick="show('json')">json</a></li>
-				<li><a href="#" onclick="show('uuid')">uuid</a></li>
+				<li><i class="fas fa-box" aria-hidden="true"></i></li>
+				<li><a href="#" id="base64-tab" role="tab" aria-selected="false" aria-controls="base64" data-tab="base64" tabindex="-1">base64</a></li>
+				<li><a href="#" id="br-docs-tab" role="tab" aria-selected="false" aria-controls="br-docs" data-tab="br-docs" tabindex="-1">br docs</a></li>
+				<li><a href="#" id="json-tab" role="tab" aria-selected="false" aria-controls="json" data-tab="json" tabindex="-1">json</a></li>
+				<li><a href="#" id="uuid-tab" role="tab" aria-selected="false" aria-controls="uuid" data-tab="uuid" tabindex="-1">uuid</a></li>
 			</ul>
 		</nav>
 		<main>
-			<section class="state-hidden" id="base64">
+			<section class="state-hidden" id="base64" role="tabpanel" aria-labelledby="base64-tab">
 				<h2>Base 64</h2>
 				<form>
-					<div>
-						<textarea id="base64-encoded" placeholder="Type (or paste) here..." spellcheck="false" rows="14" cols="120"></textarea>
-						<button type="button" onclick="copy('base64-encoded')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
+					<div class="input-group">
+						<label for="base64-encoded" class="sr-only">Base64 Encoded Text</label>
+						<textarea id="base64-encoded" placeholder="Type (or paste) here..." spellcheck="false" rows="14" aria-label="Base64 encoded text"></textarea>
+						<button type="button" data-copy="base64-encoded" aria-label="Copy encoded text to clipboard"><i class="fas fa-copy" aria-hidden="true"></i></button>
 					</div>
 					<div>
-						<button type="button" onclick="decodeBase64()" id="base64-decode" value="Decode"><i class="fas fa-arrow-down"></i> Decode</button>
-						<button type="button" onclick="encodeBase64()" id="base64-encode" value="Encode"><i class="fas fa-arrow-up"></i> Encode</button>
+						<button type="button" id="base64-decode" aria-label="Decode Base64"><i class="fas fa-arrow-down" aria-hidden="true"></i> Decode</button>
+						<button type="button" id="base64-encode" aria-label="Encode to Base64"><i class="fas fa-arrow-up" aria-hidden="true"></i> Encode</button>
 					</div>
-					<div>
-						<button type="button" onclick="copy('base64-decoded')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
-						<textarea id="base64-decoded" placeholder="Type (or paste) here..." spellcheck="false" rows="14" cols="120"></textarea>
+					<div class="error-message" id="base64-error" role="alert"></div>
+					<div class="input-group">
+						<label for="base64-decoded" class="sr-only">Base64 Decoded Text</label>
+						<button type="button" data-copy="base64-decoded" aria-label="Copy decoded text to clipboard"><i class="fas fa-copy" aria-hidden="true"></i></button>
+						<textarea id="base64-decoded" placeholder="Type (or paste) here..." spellcheck="false" rows="14" aria-label="Base64 decoded text"></textarea>
 					</div>
 				</form>
 			</section>
 
-			<section class="state-hidden" id="br-docs">
+			<section class="state-hidden" id="br-docs" role="tabpanel" aria-labelledby="br-docs-tab">
 				<h2>Brazilian Documents</h2>
 				<form>
 					<div>
-						<button type="button" onclick="cpf()" id="doc-cpf" value="Generate CPF">Generate CPF</button>
-						<button type="button" onclick="cnpj()" id="doc-cnpj" value="Generate CNPJ">Generate CNPJ</button>
+						<button type="button" id="doc-cpf" aria-label="Generate CPF">Generate CPF</button>
+						<button type="button" id="doc-cnpj" aria-label="Generate CNPJ">Generate CNPJ</button>
 					</div>
 					<div>
-						<input id="doc" />
+						<label for="doc" class="sr-only">Generated Document</label>
+						<input id="doc" aria-label="Generated document number" readonly />
 					</div>
 				</form>
 			</section>
 
-			<section class="state-hidden" id="json">
+			<section class="state-hidden" id="json" role="tabpanel" aria-labelledby="json-tab">
 				<h2>JSON</h2>
 				<form>
-					<div>
-						<textarea id="json-input" placeholder="Type (or paste) here..." spellcheck="false" rows="10" cols="120"></textarea>
-						<button type="button" onclick="copy('json-input')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
+					<div class="input-group">
+						<label for="json-input" class="sr-only">JSON Input</label>
+						<textarea id="json-input" placeholder="Type (or paste) here..." spellcheck="false" rows="10" aria-label="JSON input"></textarea>
+						<button type="button" data-copy="json-input" aria-label="Copy JSON input to clipboard"><i class="fas fa-copy" aria-hidden="true"></i></button>
 					</div>
 					<div>
-						<button type="button" onclick="beautifyJSON()" id="beautify-json" value="Format/Beautify"><i class="fas fa-align-left"></i> Format/Beautify</button>
+						<button type="button" id="beautify-json" aria-label="Format and beautify JSON"><i class="fas fa-align-left" aria-hidden="true"></i> Format/Beautify</button>
 					</div>
-					<div>
-						<button type="button" onclick="copy('json-output')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
-						<textarea id="json-output" placeholder="Type (or paste) here..." spellcheck="false" rows="20" cols="120"></textarea>
+					<div class="error-message" id="json-error" role="alert"></div>
+					<div class="input-group">
+						<label for="json-output" class="sr-only">JSON Output</label>
+						<button type="button" data-copy="json-output" aria-label="Copy formatted JSON to clipboard"><i class="fas fa-copy" aria-hidden="true"></i></button>
+						<textarea id="json-output" placeholder="Type (or paste) here..." spellcheck="false" rows="20" aria-label="Formatted JSON output"></textarea>
 					</div>
 				</form>
 			</section>
 
-			<section class="state-hidden" id="uuid">
+			<section class="state-hidden" id="uuid" role="tabpanel" aria-labelledby="uuid-tab">
 				<h2>UUID</h2>
 				<form>
 					<div>
-						<button type="button" onclick="uuid()" id="generate-uuid" value="Generate">Generate</button>
+						<button type="button" id="generate-uuid" aria-label="Generate UUID">Generate</button>
 					</div>
-					<div>
-						<input id="uuid-value" size="36" />
-						<button type="button" onclick="copy('uuid-value')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
+					<div class="input-group">
+						<label for="uuid-value" class="sr-only">Generated UUID</label>
+						<input id="uuid-value" size="36" aria-label="Generated UUID" readonly />
+						<button type="button" data-copy="uuid-value" aria-label="Copy UUID to clipboard"><i class="fas fa-copy" aria-hidden="true"></i></button>
 					</div>
 				</form>
 			</section>
 		</main>
-		<script type="text/javascript" src="assets/js/tools.js" charset="utf-8"></script>
+		<style>
+			.sr-only {
+				position: absolute;
+				width: 1px;
+				height: 1px;
+				padding: 0;
+				margin: -1px;
+				overflow: hidden;
+				clip: rect(0, 0, 0, 0);
+				white-space: nowrap;
+				border-width: 0;
+			}
+		</style>
+		<script type="text/javascript" src="assets/js/tools.js" charset="utf-8" defer></script>
 	</body>
 </html>
