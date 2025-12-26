@@ -240,6 +240,62 @@ function uuid() {
 	}
 }
 
+function unescapeJSONString(str) {
+	let result = '';
+	let i = 0;
+
+	while (i < str.length) {
+		if (str[i] === '\\' && i + 1 < str.length) {
+			const next = str[i + 1];
+			switch (next) {
+				case '"':
+					result += '"';
+					i += 2;
+					break;
+				case '/':
+					result += '/';
+					i += 2;
+					break;
+				case '\\':
+					result += '\\';
+					i += 2;
+					break;
+				case 'n':
+					result += '\n';
+					i += 2;
+					break;
+				case 't':
+					result += '\t';
+					i += 2;
+					break;
+				case 'r':
+					result += '\r';
+					i += 2;
+					break;
+				case 'u':
+					if (i + 5 < str.length) {
+						const hex = str.substring(i + 2, i + 6);
+						result += String.fromCharCode(parseInt(hex, 16));
+						i += 6;
+					} else {
+						result += str[i];
+						i++;
+					}
+					break;
+				default:
+					result += str[i];
+					i++;
+					break;
+			}
+		} else {
+			result += str[i];
+			i++;
+		}
+	}
+
+	return result;
+}
+
 function beautifyJSON() {
 	let input = document.getElementById("json-input").value.trim();
 	const outputElement = document.getElementById("json-output");
@@ -261,16 +317,13 @@ function beautifyJSON() {
 			parsed = JSON.parse(input);
 		} catch (firstError) {
 			if ((input.startsWith('{') || input.startsWith('[')) && input.includes('\\"')) {
-				let unescaped = input
-					.replace(/\\\\/g, '\u0000')
-					.replace(/\\"/g, '"')
-					.replace(/\\\//g, '/')
-					.replace(/\\n/g, '\n')
-					.replace(/\\t/g, '\t')
-					.replace(/\\r/g, '\r')
-					.replace(/\u0000/g, '\\');
-
 				try {
+					if ((input.startsWith('"') && input.endsWith('"')) ||
+					    (input.startsWith("'") && input.endsWith("'"))) {
+						input = input.slice(1, -1);
+					}
+
+					const unescaped = unescapeJSONString(input);
 					parsed = JSON.parse(unescaped);
 				} catch (secondError) {
 					throw firstError;
