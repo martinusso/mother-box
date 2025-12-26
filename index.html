@@ -15,7 +15,30 @@
 		text-align: center;
 	}
 	button, input, textarea {
-		margin: 0.3em;
+		margin: 0;
+	}
+	button {
+		padding: 0.6em 1.2em;
+		font-size: 0.95em;
+		border: 1px solid #ccc;
+		background-color: #f8f8f8;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+	button:hover {
+		background-color: #e8e8e8;
+		border-color: #999;
+	}
+	input, textarea {
+		padding: 0.65em;
+		font-size: 1em;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+	}
+	textarea {
+		resize: vertical;
+		font-family: inherit;
 	}
 	nav ul {
 		list-style: none;
@@ -31,8 +54,74 @@
 	nav ul li a:hover {
 		color: red;
 	}
-	.state-hidden:not(.tabs-active) {
+	.state-hidden {
 	    display: none;
+	}
+	.state-hidden.tabs-active {
+	    display: block;
+	}
+	.input-with-copy {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5em;
+		margin-bottom: 1em;
+	}
+	.input-with-copy textarea,
+	.input-with-copy input {
+		flex: 1;
+	}
+	.action-buttons {
+		display: flex;
+		gap: 0.5em;
+		margin-bottom: 1em;
+	}
+	.action-buttons button {
+		padding: 0.6em 1.2em;
+		font-size: 0.95em;
+	}
+	.copy-button {
+		background-color: #f0f0f0;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		padding: 0.4em 0.6em;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		gap: 0.25em;
+		font-size: 0.8em;
+		white-space: nowrap;
+		transition: background-color 0.2s;
+	}
+	.copy-button:hover {
+		background-color: #e0e0e0;
+	}
+	.copy-button:active {
+		background-color: #d0d0d0;
+	}
+	#doc-validation-result {
+		font-weight: 500;
+		margin-top: 0.75em;
+		padding: 0.75em;
+		border-radius: 4px;
+	}
+	.docs-section {
+		margin-top: 1.5em;
+	}
+	.docs-section h3 {
+		margin-bottom: 0.75em;
+		font-size: 1.1em;
+		font-weight: 600;
+	}
+	.docs-buttons {
+		display: flex;
+		gap: 0.5em;
+		margin-bottom: 1em;
+	}
+	.error-message {
+		margin-bottom: 1em;
+		padding: 0.75em;
+		border-radius: 4px;
+		font-weight: 500;
 	}
 </style>
 	</head>
@@ -50,17 +139,21 @@
 			<section class="state-hidden" id="base64">
 				<h2>Base 64</h2>
 				<form>
-					<div>
+					<div class="input-with-copy">
 						<textarea id="base64-encoded" placeholder="Type (or paste) here..." spellcheck="false" rows="14" cols="120"></textarea>
-						<button type="button" onclick="copy('base64-encoded')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
+						<button type="button" class="copy-button" onclick="copy('base64-encoded')" title="Copy to Clipboard">
+							📋 <span>Copy</span>
+						</button>
 					</div>
-					<div>
-						<button type="button" onclick="decodeBase64()" id="base64-decode" value="Decode"><i class="fas fa-arrow-down"></i> Decode</button>
-						<button type="button" onclick="encodeBase64()" id="base64-encode" value="Encode"><i class="fas fa-arrow-up"></i> Encode</button>
+					<div class="action-buttons">
+						<button type="button" onclick="decodeBase64()" id="base64-decode"><i class="fas fa-arrow-down"></i> Decode</button>
+						<button type="button" onclick="encodeBase64()" id="base64-encode"><i class="fas fa-arrow-up"></i> Encode</button>
 					</div>
-					<div>
-						<button type="button" onclick="copy('base64-decoded')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
+					<div class="input-with-copy">
 						<textarea id="base64-decoded" placeholder="Type (or paste) here..." spellcheck="false" rows="14" cols="120"></textarea>
+						<button type="button" class="copy-button" onclick="copy('base64-decoded')" title="Copy to Clipboard">
+							📋 <span>Copy</span>
+						</button>
 					</div>
 				</form>
 			</section>
@@ -68,12 +161,25 @@
 			<section class="state-hidden" id="br-docs">
 				<h2>Brazilian Documents</h2>
 				<form>
-					<div>
-						<button type="button" onclick="cpf()" id="doc-cpf" value="Generate CPF">Generate CPF</button>
-						<button type="button" onclick="cnpj()" id="doc-cnpj" value="Generate CNPJ">Generate CNPJ</button>
+					<div class="action-buttons">
+						<button type="button" onclick="generateCPF()" id="doc-cpf">Generate CPF</button>
+						<button type="button" onclick="generateCNPJ()" id="doc-cnpj">Generate CNPJ</button>
 					</div>
-					<div>
-						<input id="doc" />
+					<div class="input-with-copy">
+						<input id="doc" placeholder="Generated document will appear here..." />
+						<button type="button" class="copy-button" onclick="copy('doc')" title="Copy to Clipboard">
+							📋 <span>Copy</span>
+						</button>
+					</div>
+					<div class="docs-section">
+						<h3>Validate Document</h3>
+						<div class="input-with-copy">
+							<input id="doc-validate" placeholder="Paste CPF or CNPJ here to validate..." />
+							<button type="button" onclick="validateDocument()" id="validate-doc-btn">
+								<i class="fas fa-check"></i> <span>Validate</span>
+							</button>
+						</div>
+						<div id="doc-validation-result" class="error-message" style="display: none;"></div>
 					</div>
 				</form>
 			</section>
@@ -81,16 +187,21 @@
 			<section class="state-hidden" id="json">
 				<h2>JSON</h2>
 				<form>
-					<div>
+					<div class="input-with-copy">
 						<textarea id="json-input" placeholder="Type (or paste) here..." spellcheck="false" rows="10" cols="120"></textarea>
-						<button type="button" onclick="copy('json-input')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
+						<button type="button" class="copy-button" onclick="copy('json-input')" title="Copy to Clipboard">
+							📋 <span>Copy</span>
+						</button>
 					</div>
-					<div>
-						<button type="button" onclick="beautifyJSON()" id="beautify-json" value="Format/Beautify"><i class="fas fa-align-left"></i> Format/Beautify</button>
+					<div class="action-buttons">
+						<button type="button" onclick="beautifyJSON()" id="beautify-json"><i class="fas fa-align-left"></i> Format/Beautify</button>
 					</div>
-					<div>
-						<button type="button" onclick="copy('json-output')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
+					<div id="json-error" class="error-message" style="display: none; color: #d32f2f; background-color: #ffe6e6;"></div>
+					<div class="input-with-copy">
 						<textarea id="json-output" placeholder="Type (or paste) here..." spellcheck="false" rows="20" cols="120"></textarea>
+						<button type="button" class="copy-button" onclick="copy('json-output')" title="Copy to Clipboard">
+							📋 <span>Copy</span>
+						</button>
 					</div>
 				</form>
 			</section>
@@ -98,12 +209,14 @@
 			<section class="state-hidden" id="uuid">
 				<h2>UUID</h2>
 				<form>
-					<div>
-						<button type="button" onclick="uuid()" id="generate-uuid" value="Generate">Generate</button>
+					<div class="action-buttons">
+						<button type="button" onclick="uuid()" id="generate-uuid">Generate</button>
 					</div>
-					<div>
-						<input id="uuid-value" size="36" />
-						<button type="button" onclick="copy('uuid-value')" value="Copy to Clipboard"><i class="fas fa-copy"></i></button>
+					<div class="input-with-copy">
+						<input id="uuid-value" placeholder="Generated UUID will appear here..." />
+						<button type="button" class="copy-button" onclick="copy('uuid-value')" title="Copy to Clipboard">
+							📋 <span>Copy</span>
+						</button>
 					</div>
 				</form>
 			</section>
